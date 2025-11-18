@@ -31,13 +31,13 @@ public class CredencialAccesoDao implements GenericDao<CredencialAcceso> {
 
     @Override
     public CredencialAcceso leer(long id) throws SQLException {
-        String sql = "SELECT * FROM credencialesAcceso WHERE id = ? AND eliminado = false";
+        String sql = "SELECT * FROM credencialesAcceso WHERE id_CredencialAcceso = ? AND eliminado = false";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 CredencialAcceso c = new CredencialAcceso();
-                c.setId(rs.getLong("id"));
+                c.setId(rs.getLong("id_CredencialAcceso"));
                 c.setHashPassword(rs.getString("hashPassword"));
                 c.setSalt(rs.getString("salt"));
                 c.setUltimoCambio(rs.getTimestamp("ultimoCambio").toLocalDateTime());
@@ -71,7 +71,7 @@ public class CredencialAccesoDao implements GenericDao<CredencialAcceso> {
 
     @Override
     public void actualizar(CredencialAcceso c) throws SQLException {
-        String sql = "UPDATE credencialesAcceso SET hashPassword=?, salt=?, ultimoCambio=?, requiereReset=?, eliminado=? WHERE id=?";
+        String sql = "UPDATE credencialesAcceso SET hashPassword=?, salt=?, ultimoCambio=?, requiereReset=?, eliminado=? WHERE id_CredencialAcceso=?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setString(1, c.getHashPassword());
             ps.setString(2, c.getSalt());
@@ -85,7 +85,7 @@ public class CredencialAccesoDao implements GenericDao<CredencialAcceso> {
 
     @Override
     public void eliminar(long id) throws SQLException {
-        String sql = "UPDATE credencialesAcceso SET eliminado = true WHERE id = ?";
+        String sql = "UPDATE credencialesAcceso SET eliminado = true WHERE id_CredencialAcceso = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();

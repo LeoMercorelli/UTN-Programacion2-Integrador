@@ -3,6 +3,7 @@ package main;
 import entities.Usuario;
 import entities.CredencialAcceso;
 import service.UsuarioService;
+import service.CredencialAccesoService;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -14,10 +15,12 @@ public class AppMenu {
 
     private final Scanner scanner;
     private final UsuarioService usuarioService;
+    private final CredencialAccesoService credencialService;
 
     public AppMenu() {
         scanner = new Scanner(System.in);
         usuarioService = new UsuarioService();
+        credencialService = new CredencialAccesoService();
     }
 
     public void mostrarMenu() {
@@ -78,7 +81,7 @@ public class AppMenu {
             cred.setHashPassword(hash);
             cred.setSalt(salt);
             cred.setUltimoCambio(LocalDateTime.now()); // Lo asignamos en todas las capas para asegurar robustez
-            cred.setRequiereReset(false);
+            cred.setRequiereReset(true);
             cred.setEliminado(false);
 
             Usuario u = new Usuario();
@@ -144,21 +147,28 @@ public class AppMenu {
                 this.mostrarMenu();
             } else {
                 Usuario u = usuarioService.getById(id);
+                CredencialAcceso c = credencialService.getById(id);
                 if (u == null) {
                     System.out.println("Usuario no encontrado.");
                     return;
                 }
 
+                
                 System.out.print("Nuevo email: ");
                 u.setEmail(scanner.nextLine());
+                
                 System.out.print("Activo? (true/false): ");
                 u.setActivo(Boolean.parseBoolean(scanner.nextLine()));
                 u.setFechaRegistro(LocalDateTime.now());
+                
+                c.setUltimoCambio(LocalDateTime.now());
 
+                
                 usuarioService.actualizar(u);
+                credencialService.actualizar(c);
                 System.out.println("Usuario actualizado con exito.");
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Error al actualizar usuario: " + e.getMessage());
         }
     }
@@ -171,6 +181,7 @@ public class AppMenu {
                 this.mostrarMenu();
             }else{
                 usuarioService.eliminar(id);
+                credencialService.eliminar(id);
                 System.out.println("Usuario eliminado (baja logica).");
             }
         } catch (SQLException | RegistroNoEncontradoException e) {

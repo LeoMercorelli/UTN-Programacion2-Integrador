@@ -65,13 +65,16 @@ public class UsuarioService implements GenericService<Usuario> {
     }
 
     @Override
-    public void actualizar(Usuario u) throws SQLException {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            UsuarioDao dao = new UsuarioDao(conn);
-            dao.actualizar(u);
+    public void actualizar(Usuario u) throws SQLException, IllegalArgumentException {
+        if(emailValido(u.getEmail())){
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                UsuarioDao dao = new UsuarioDao(conn);
+                dao.actualizar(u);
+            }
         }
     }
-
+    
+    
     @Override
     public void eliminar(long id) throws SQLException, RegistroNoEncontradoException {
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -90,7 +93,6 @@ public class UsuarioService implements GenericService<Usuario> {
                 throw e;
             }finally{
                 conn.setAutoCommit(true);
-                conn.close();
             }
         }
     }
@@ -110,7 +112,7 @@ public class UsuarioService implements GenericService<Usuario> {
         return true;
     }
     
-    public static boolean emailValido(String email) throws IllegalArgumentException{
+    public boolean emailValido(String email) throws IllegalArgumentException{
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("El email es obligatorio"); // Si es nulo o está vacío retorna false (Campo obligatorio).
         }
@@ -118,7 +120,7 @@ public class UsuarioService implements GenericService<Usuario> {
         // Validación de formato y caracteres del email
         if (!email.matches(EMAIL_REGEX)) {
             throw new IllegalArgumentException("""
-                                               El email solo puede contener letras, números, guiones, guiones bajos y puntos,
+                                               \nEl email solo puede contener letras, números, guiones, guiones bajos y puntos,
                                                no debe contener espacios y debe tener entre 4 y 120 caracteres.""");
         }
 

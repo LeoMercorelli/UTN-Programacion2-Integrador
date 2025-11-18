@@ -7,9 +7,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import service.exceptions.RegistroNoEncontradoException;
 
 public class CredencialAccesoService implements GenericService<CredencialAcceso> {
 
+    public CredencialAccesoService() {
+    }
+    
     @Override
     public void insertar(CredencialAcceso c) throws SQLException {
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -44,10 +48,25 @@ public class CredencialAccesoService implements GenericService<CredencialAcceso>
     }
 
     @Override
-    public void eliminar(long id) throws SQLException {
+    public void eliminar(long id) throws SQLException, RegistroNoEncontradoException {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            CredencialAccesoDao dao = new CredencialAccesoDao(conn);
-            dao.eliminar(id);
+            conn.setAutoCommit(false);
+
+            try {
+                CredencialAccesoDao dao = new CredencialAccesoDao(conn);
+                if (dao.leer(id) != null) {
+                    dao.eliminar(id);
+                    conn.commit();
+                } else {
+                    conn.rollback();
+                    throw new RegistroNoEncontradoException("La credencial con id " + id + " no existe.");
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }finally{
+                conn.setAutoCommit(true);
+            }
         }
     }
 }

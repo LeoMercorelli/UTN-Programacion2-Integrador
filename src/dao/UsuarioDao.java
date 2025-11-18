@@ -101,7 +101,7 @@ public class UsuarioDao implements GenericDao<Usuario> {
 
     @Override
     public void eliminar(long id) throws SQLException {
-        String sql = "UPDATE usuarios SET eliminado = true WHERE id = ?";
+        String sql = "UPDATE usuarios SET eliminado = true, activo = false WHERE id = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();
